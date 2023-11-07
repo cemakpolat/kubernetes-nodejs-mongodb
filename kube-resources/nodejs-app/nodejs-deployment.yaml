@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs-app
+  template:
+    metadata:
+      labels:
+        app: nodejs-app
+    spec:
+      containers:
+      - name: nodejs-app
+        image: nodejs-app-image:latest
+        imagePullPolicy: Never  # or IfNotPresent
+        ports:
+        - containerPort: 3000
+        readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - |
+                  COUNTER=0
+                  while !(nc -z localhost 27017) && [[ $COUNTER -lt 60 ]] ; do
+                      sleep 2
+                      let COUNTER+=2
+                      echo "Waiting for mongo to initialize... ($COUNTER seconds so far)"
+                  done
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME # username
+            valueFrom:
+              secretKeyRef:
+                name: mongodb-secret
+                key: MONGO_INITDB_ROOT_USERNAME 
+          - name: MONGO_INITDB_ROOT_PASSWORD # password
+          - name: PORT # port
+            valueFrom:
+              configMapKeyRef:
+                name: app-config
+                key: port
+          - name: MONGO_DB_URL # url is not need indeed.
+            valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: mongo_url
+            # value: "mongodb://mongodb:27017/"  # Connect to MongoDB service
+
+          - name: MONGO_DB_NAME # url is not need indeed.
+            valueFrom:
+                  configMapKeyRef:
+                    name: app-config
+                    key: db_name
+            # value: "sampleDB"  # Connect to MongoDB service
