@@ -34,27 +34,13 @@ spec:
             periodSeconds: 10
             failureThreshold: 3
         env:
-          - name: MONGO_INITDB_ROOT_USERNAME # username
-            valueFrom:
-              secretKeyRef:
-                name: mongodb-secret
-                key: MONGO_INITDB_ROOT_USERNAME 
-          - name: MONGO_INITDB_ROOT_PASSWORD # password
           - name: PORT # port
             valueFrom:
               configMapKeyRef:
                 name: app-config
                 key: port
           - name: MONGO_DB_URL # url is not need indeed.
-            valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: mongo_url
-            # value: "mongodb://mongodb:27017/"  # Connect to MongoDB service
+            value: "mongodb://mongodb:27017/"  # Connect to MongoDB service
 
           - name: MONGO_DB_NAME # url is not need indeed.
-            valueFrom:
-                  configMapKeyRef:
-                    name: app-config
-                    key: db_name
-            # value: "sampleDB"  # Connect to MongoDB service
+            value: "sampleDB"  # Connect to MongoDB service

@@ -19,8 +19,8 @@ spec:
         - containerPort: 27017
         volumeMounts:
           - name: mongodb-data
-            mountPath: data/mongodb   # MongoDB data directory
+            mountPath: datamongodb   # MongoDB data directory
       volumes:
         - name: mongodb-data
           persistentVolumeClaim:
-            claimName: mongodb-pvc  # Name of the PVC to be used by the deployment
+            claimName: mongo-pvc  # Name of the PVC to be used by the deployment

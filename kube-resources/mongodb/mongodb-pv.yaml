@@ -10,4 +10,4 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: manual
   hostPath:
-    path: "data/mongodb"  # Replace this path with your desired storage path
+    path: "datamongodb"  # Replace this path with your desired storage path

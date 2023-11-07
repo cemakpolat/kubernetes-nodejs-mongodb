@@ -10,6 +10,7 @@ const collectionName = 'collection'; // Replace with your collection name
 const mongoURL = process.env.MONGO_DB_URL;
 const dbName = process.env.MONGO_DB_NAME;
 
+
 async function connectDB() {
   const client = new MongoClient(mongoURL);
   await client.connect();
@@ -19,10 +20,11 @@ async function connectDB() {
 async function initialize() {
     const client = new MongoClient(mongoURL);
     try {
-      const collection = await connectDB();
-      // Delete all documents from the collection
+      await client.connect();
+      const collection = client.db(dbName).collection(collectionName);
       await collection.deleteMany({});
       console.log('All records deleted from the collection');
+      generateAndSaveDummyUsers(10).catch(console.error);
     } catch (err) {
       console.error('Error deleting records:', err);
     } finally {
@@ -30,7 +32,7 @@ async function initialize() {
     }
   }
 
-async function addFakeUser(){
+async function addFakeUser(collection){
   const fakeUser = {
     username: faker.internet.userName(),
     email: faker.internet.email(),
@@ -45,19 +47,28 @@ async function addFakeUser(){
   
 async function generateAndSaveDummyUsers(numOfUsers) {
     const collection = await connectDB();
-    // const numOfUsers = numOfUsers;
     for (let i = 0; i < numOfUsers; i++) {
-      addFakeUser()
+      addFakeUser(collection);
     }
     console.log('All users generated and saved!');
   }
   
 // Create a new document
-app.post('/api/adduser', async (req, res) => {
+app.get('/api/adduser', async (req, res) => {
   try {
     const collection = await connectDB();
-    const result = await collection.insertOne(req.body);
-    res.status(201).json({ message: 'Data created', id: result.insertedId });
+    // const result = await collection.insertOne(req.body);
+    const fakeUser = {
+      username: faker.internet.userName(),
+      email: faker.internet.email(),
+      avatar: faker.image.avatar(),
+      password: faker.internet.password(),
+      birthdate: faker.date.birthdate(),
+      registeredAt: faker.date.past(),
+    };
+    const result = await collection.insertOne(fakeUser);
+    console.log(result);
+    res.status(200).json({ message: 'Data created'});
   } catch (err) {
     res.status(500).json({ message: 'Error creating data', error: err });
   }
@@ -83,7 +94,6 @@ app.get('/', async (req, res) => {
 
 // clean the database and generate new users
 initialize().catch(console.error);
-generateAndSaveDummyUsers(10).catch(console.error);
 
 // Start the server
 app.listen(port, () => {
